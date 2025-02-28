@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/login.css">
+    <link rel="stylesheet" href="/signup.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+     <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">  -->
+    <title>SafeStreet</title>
+</head>
+<body>
+    
+        <img src="/images/signin.gif" alt="safestreet" class="b-image">
+        
+    <form action="/user/signup" method="post">
+    <div>
+        <br>
+        <h3><img src="" height="20px" width="25px"> SafeStreet</h3>
+        <br>
+        
+        <div class="/signup">
+            <h2>Sign Up to SafeStreet</h2>
+            <br>
+            <p id="email_exists">E-mail already exists, please Signin</p>
+            <label for="email">
+            <p>First Name</p>
+            <input type="text" id="name1" name="FirstName" placeholder="First name" title="FirstName" required >
+            <br>
+            <p>Last Name</p>
+            <input type="text" id="text" name="LastName" placeholder="Last name" title="LastName" required >
+            <br>
+            <p>E-mail</p>
+            <input type="email" id="email" name="email" placeholder="Example@gmail.com" title="email" required >
+           
+            </label>
+            <br>
+            <br>
+            <label for="password">
+            <p>Password</p>
+            <div class="password1">
+                <input type="password" name="password" id="password1" placeholder="password" pattern = "(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required title="Must contain at least one  number and one uppercase and lowercase letter, and at least 8 or more characters">
+                <i class="fa-solid fa-eye" id="eye-open1"></i>
+                <i class="fa-solid fa-eye-slash" id="eye-close1"></i>
+             </div>
+             <br>
+             <p>Confirm Password</p>
+             <div class="password2">
+             
+             <input type="password" name="password2" id="password2" placeholder="password" pattern = "(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required title="Must contain at least one  number and one uppercase and lowercase letter, and at least 8 or more characters">
+                <i class="fa-solid fa-eye" id="eye-open2"></i>
+                <i class="fa-solid fa-eye-slash" id="eye-close2"></i>
+            </div>
+             </label>
+             <br>
+             <p id="message2"> </p>
+             <% if (locals.error) { %>
+                <p style="color: red;"><%= error %></p>
+              <% } %>
+            <br>
+            <br>
+            <a href="signin"><p class="forgot">already have an account? <b>Sign In</b></p></a>
+            <br>
+            <div class="submit">
+            <button type="submit" id="submit2">Submit</button>
+            </div>
+            <br>
+            <br>
+            </div>
+    </div>
+   
+    </form>
+    
+    
+    <script src="/signupjs.js"></script>
+    
+</body>
+</html>

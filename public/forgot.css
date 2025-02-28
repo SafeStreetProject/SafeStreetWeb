@@ -1,0 +1,141 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #111111;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+    color: white;
+  }
+  
+  h2 {
+    font-size: 2.5rem;
+    color: white;
+    margin-bottom: 2rem;
+    text-align: center;
+    animation: fadeIn 1s ease-out;
+  }
+  
+  /* Form Styling */
+  form {
+    background-color: #111111;
+    padding: 2rem 2.5rem;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 400px;
+    animation: slideUp 0.5s ease-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Label Styling */
+  label {
+    display: block;
+    font-size: 1rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+    font-weight: normal;
+    width: 100%;
+    text-align: left;
+  }
+  
+  /* Input Field Styling */
+  input[type="email"] {
+    width: 100%;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #333;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s ease;
+    background-color: transparent;
+    color: white;
+  }
+  
+  input[type="email"]:focus {
+    border-color: #2563eb;
+  }
+  
+  /* Button Styling */
+  button[type="submit"] {
+    width: 100%;
+    padding: 1rem;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button[type="submit"]:hover {
+    background-color: #1d4ed8;
+  }
+  
+  /* Error and Success Messages */
+  p {
+    font-size: 1rem;
+    text-align: center;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    border-radius: 5px;
+    width: 100%;
+  }
+  
+  .error-message {
+    color: #ff4d4d;
+  }
+  
+  .success-message {
+    color: #4caf50;
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  /* Mobile Responsiveness */
+  @media (max-width: 600px) {
+    h2 {
+      font-size: 1.8rem;
+    }
+  
+    form {
+      padding: 1.5rem;
+    }
+  
+    input[type="email"], button[type="submit"] {
+      padding: 1rem;
+    }
+  }

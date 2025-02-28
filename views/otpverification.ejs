@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP Verification</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-[#121212] text-white p-4">
+  <div class="w-full max-w-md flex flex-col gap-6">
+    <button type="button" class="text-white text-left w-fit" onclick="goBack()" aria-label="Go back">
+      ← Back
+    </button>
+    <h1 class="text-2xl font-medium mb-8">
+      Enter OTP sent to <span class="block text-xl text-gray-400 mt-1"><%= locals.email %></span>
+    </h1>
+    
+    <form id="otpForm" class="flex flex-col gap-6" action="/user/otpverification" method="POST">
+      <input type="hidden" name="email" value="<%= locals.email %>" />
+      <input type="hidden" name="otp" id="otpInput" />
+      <div class="flex justify-between gap-3">
+        <input type="text" maxlength="1" class="otp-digit w-16 h-16 text-2xl text-center bg-transparent border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+        <input type="text" maxlength="1" class="otp-digit w-16 h-16 text-2xl text-center bg-transparent border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+        <input type="text" maxlength="1" class="otp-digit w-16 h-16 text-2xl text-center bg-transparent border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+        <input type="text" maxlength="1" class="otp-digit w-16 h-16 text-2xl text-center bg-transparent border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+        <input type="text" maxlength="1" class="otp-digit w-16 h-16 text-2xl text-center bg-transparent border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+        <input type="text" maxlength="1" class="otp-digit w-16 h-16 text-2xl text-center bg-transparent border border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+      </div>
+      <button type="submit" class="w-full py-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+        Verify OTP
+      </button>
+      <% if (locals.error) { %>
+        <p class="text-red-500 mt-4"><%= locals.error %></p>
+      <% } %>
+    </form>
+
+    <div class="text-center mt-6">
+      <p class="text-gray-400 text-sm mb-4">Resend OTP in <span id="timer">00:30</span></p>
+    </div>
+  </div>
+
+  <script>
+    // OTP Input Navigation
+    const otpDigits = document.querySelectorAll('.otp-digit');
+    const otpInput = document.getElementById('otpInput');
+    const otpForm = document.getElementById('otpForm');
+
+    otpDigits.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        if (input.value.length === 1 && index < otpDigits.length - 1) {
+          otpDigits[index + 1].focus();
+        }
+        updateOtpInput();
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !input.value && index > 0) {
+          otpDigits[index - 1].focus();
+        }
+      });
+    });
+
+    function updateOtpInput() {
+      otpInput.value = Array.from(otpDigits).map(digit => digit.value).join('');
+    }
+
+    otpForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      updateOtpInput();
+      if (otpInput.value.length === 6) {
+        otpForm.submit();
+      } else {
+        alert('Please enter a valid 6-digit OTP');
+      }
+    });
+
+    // Timer Functionality
+    let timeLeft = 30;
+    const timerElement = document.getElementById('timer');
+    const timer = setInterval(() => {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      timeLeft--;
+      if (timeLeft < 0) {
+        clearInterval(timer);
+      }
+    }, 1000);
+
+    // Back Button Functionality
+    function goBack() {
+      window.history.back();
+    }
+  </script>
+</body>
+</html>
+

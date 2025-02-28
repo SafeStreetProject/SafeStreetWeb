@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeStreet - Help</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+        }
+        
+        .navbar {
+            width: 100%;
+            background-color: #343a40;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        .sidebar {
+            width: 250px;
+            height: calc(100vh - 50px);
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+            position: fixed;
+            left: 0;
+            top: 50px;
+        }
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+
+        /* Main content area */
+        .content {
+            margin-left: 250px;
+            margin-top: 60px;
+            padding: 20px;
+            width: calc(100vw - 250px);
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            margin-bottom: 30px;
+        }
+
+        .faq-item {
+            margin-bottom: 15px;
+        }
+
+        .faq-question {
+            font-weight: bold;
+            cursor: pointer;
+            padding: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+        }
+
+        .faq-answer {
+            display: none;
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 4px solid #3498db;
+            margin-top: 5px;
+            border-radius: 5px;
+        }
+
+        /* Contact Support */
+        .contact-section {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .contact-section h4 {
+            margin-bottom: 10px;
+        }
+
+        .user-guide a {
+            text-decoration: none;
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h2>SafeStreet</h2>
+        <div> 
+            <% if (locals.user) { %>
+                <p style="color: #f8f9fa;font-size: 20px;font-family: Arial, Helvetica, sans-serif;padding-bottom: -20px;"><%= locals.user.FirstName %></p>
+            <% } %>
+        </div>
+    </div>
+    <div class="sidebar">
+        <a href="dashboard">Dashboard</a>
+        <a href="reports">Reports</a>
+        <a href="map">Map Overview</a>
+        <a href="management">Management</a>
+        <a href="help">Help</a>
+        <button class="btn btn-danger w-100 mt-3"><a href="/user/logout">Logout</a></button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h3>Help & Support</h3>
+
+        <!-- FAQ Section -->
+        <div class="faq-section">
+            <h4>Frequently Asked Questions</h4>
+
+            <div class="faq-item">
+                <div class="faq-question">📌 How do I review reported issues?</div>
+                <div class="faq-answer">Authorities can review reported road damage cases in the "Map Overview" section. Click on a case to view details and images.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">📌 How do I update the status of a case?</div>
+                <div class="faq-answer">You can update the case status by selecting a reported issue, choosing the correct status (Pending, In Progress, or Resolved), and saving the changes.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">📌 How do I generate a report?</div>
+                <div class="faq-answer">Reports can be generated in the "Analytics" section. Choose the date range, export the data in PDF or CSV format, and submit.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">📌 How do I use the analytics dashboard?</div>
+                <div class="faq-answer">The analytics dashboard provides visual insights into reported issues, response times, and trends. Use filters to customize the data view.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">📌 Who should I contact for technical support?</div>
+                <div class="faq-answer">For technical issues, please contact the IT support team via email at support@safestreet.com or call +91 98765 43210.</div>
+            </div>
+        </div>
+
+        <!-- Contact Support Section -->
+        <div class="contact-section">
+            <h4>Need More Help?</h4>
+            <p>If you need further assistance, feel free to contact us:</p>
+            <ul>
+                <li>📧 Email: support@safestreet.com</li>
+                <li>📞 Phone: +91 98765 43210</li>
+                <li>💬 Help Desk: <a href="#">Submit a Ticket</a></li>
+            </ul>
+        </div>
+
+        <!-- User Guide Section -->
+        <div class="user-guide mt-4">
+            <h4>📖 User Guides</h4>
+            <ul>
+                <li><a href="#">How to Review a Reported Case</a></li>
+                <li><a href="#">How to Update Case Status</a></li>
+                <li><a href="#">How to Generate Reports</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Toggle FAQ Answers
+        document.querySelectorAll(".faq-question").forEach(item => {
+            item.addEventListener("click", () => {
+                let answer = item.nextElementSibling;
+                if (answer.style.display === "block") {
+                    answer.style.display = "none";
+                } else {
+                    answer.style.display = "block";
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

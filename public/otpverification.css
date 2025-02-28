@@ -1,0 +1,101 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #121212;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+    color: #ffffff;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .back-button {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 8px 0;
+    text-align: left;
+    width: fit-content;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #ffffff;
+    margin-bottom: 32px;
+  }
+  
+  .phone-number {
+    display: block;
+    color: #a0a0a0;
+    font-size: 1.25rem;
+    margin-top: 4px;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+  }
+  
+  .otp-inputs {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  
+  .otp-inputs input {
+    width: 64px;
+    height: 64px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: transparent;
+    font-size: 24px;
+    color: #ffffff;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  
+  .otp-inputs input:focus {
+    border-color: #2575fc;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37, 117, 252, 0.2);
+  }
+  
+  button[type="submit"] {
+    width: 100%;
+    padding: 16px;
+    background-color: #2575fc;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button[type="submit"]:hover {
+    background-color: #1e5fc7;
+  }
+  
