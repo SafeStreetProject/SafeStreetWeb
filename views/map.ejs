@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeStreet - Map Overview</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Leaflet.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+        }
+        
+        .navbar {
+            width: 100%;
+            background-color: #343a40;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        .sidebar {
+            width: 250px;
+            height: calc(100vh - 50px);
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+            position: fixed;
+            left: 0;
+            top: 50px;
+        }
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+        /* Main content area */
+        .content {
+            margin-left: 250px;
+            margin-top: 60px;
+            height: calc(100vh - 60px);
+            width: calc(100vw - 250px);
+            position: relative;
+        }
+
+        /* Map should cover remaining screen */
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Legend should always stay fixed */
+        .legend {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .legend div {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend span {
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+            border-radius: 50%;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>SafeStreet</h2>
+        <div> 
+            <% if (locals.user) { %>
+                <p style="color: #f8f9fa;font-size: 20px;font-family: Arial, Helvetica, sans-serif;padding-bottom: -20px;"><%= locals.user.FirstName %></p>
+            <% } %>
+        </div>
+    </div>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="dashboard">Dashboard</a>
+        <a href="reports">Reports</a>
+        <a href="map">Map Overview</a>
+        <a href="management">Management</a>
+        <a href="help">Help</a>
+        <button class="btn btn-danger w-100 mt-3"><a href="/user/logout">Logout</a></button>
+    </div>
+
+    <!-- Top Navbar -->
+    <!-- <div class="topbar">Map Overview</div> -->
+
+    <!-- Main Content -->
+    <div class="content">
+        <div id="map"></div>
+        <div class="legend">
+            <div><span style="background: red;"></span> Pending</div>
+            <div><span style="background: yellow;"></span> In Progress</div>
+            <div><span style="background: green;"></span> Completed</div>
+        </div>
+    </div>
+
+    <!-- Leaflet.js Script -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Initialize Map
+            var map = L.map('map').setView([17.3850, 78.4867], 12); // Hyderabad default location
+
+            // Add OpenStreetMap Tile Layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Sample Report Data (Replace with actual API data)
+            var reportData = [
+                { lat: 17.4065, lng: 78.4772, status: "pending", location: "Street 1", date: "2025-02-22", name: "Omkar" },
+                { lat: 17.4210, lng: 78.5093, status: "completed", location: "Street 45", date: "2025-02-20", name: "ganesh" },
+                { lat: 17.3956, lng: 78.4822, status: "in-progress", location: "Highway 21", date: "2025-02-19", name: "nithin" },
+                { lat: 17.4100, lng: 78.4500, status: "pending", location: "Street 12", date: "2025-02-23",name: "shiva" },
+                { lat: 17.4280, lng: 78.4985, status: "completed", location: "Street 77", date: "2025-02-15", name: "mani" },
+                { lat: 17.3800, lng: 78.4700, status: "in-progress", location: "Street 35", date: "2025-02-18", name: "santhosh" }
+            ];
+
+            // Status Colors
+            var statusColors = {
+                "pending": "red",
+                "in-progress": "yellow",
+                "completed": "green"
+            };
+
+            // Add Circles to Map
+            reportData.forEach(function (report) {
+                var circle = L.circleMarker([report.lat, report.lng], {
+                    color: statusColors[report.status],
+                    fillColor: statusColors[report.status],
+                    fillOpacity: 0.9,
+                    radius: 7
+                }).addTo(map);
+
+                // Show popup on hover
+                circle.bindTooltip(`<b>${report.location}</b><br>Date: ${report.date}<br>Uploaded by: ${report.name}`, {
+                    permanent: false,
+                    direction: "top"
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+.password1,.password2{
+    display: flex;
+}
+#email_exists{
+    display: none;
+    color: red;
+    font-family: Arial, Helvetica, sans-serif;
+}

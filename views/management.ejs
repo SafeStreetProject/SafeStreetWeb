@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeStreet Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #f8f9fa;
+            margin: 0;
+        }
+        .navbar {
+            width: 100%;
+            background-color: #343a40;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        .sidebar {
+            width: 250px;
+            height: calc(100vh - 50px);
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+            position: fixed;
+            left: 0;
+            top: 50px;
+        }
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+            margin-left: 250px;
+            margin-top: 60px;
+            overflow-y: auto;
+        }
+        .card {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        .card:hover {
+            transform: scale(1.02);
+        }
+        .card .card-text {
+            flex: 1;
+            text-align: left;
+        }
+        .card .card-image {
+            width: 150px;
+            height: 100px;
+            border-radius: 5px;
+            object-fit: cover;
+            margin-left: 20px;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            width: 400px;
+        }
+        .popup label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+        .popup input, .popup select {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .popup button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>SafeStreet</h2>
+        <div> 
+            <% if (locals.user) { %>
+                <p style="color: #f8f9fa;font-size: 20px;font-family: Arial, Helvetica, sans-serif;padding-bottom: -20px;"><%= locals.user.FirstName %></p>
+            <% } %>
+        </div>
+    </div>
+    <div class="sidebar">
+        <a href="dashboard">Dashboard</a>
+        <a href="reports">Reports</a>
+        <a href="map">Map Overview</a>
+        <a href="management">Management</a>
+        <a href="help">Help</a>
+        <button class="btn btn-danger w-100 mt-3"><a href="/user/logout">Logout</a></button>
+    </div>
+    <div class="content" id="management">
+        <h1>Case Management</h1>
+        <div id="caseList"></div>
+    </div>
+    <div class="popup" id="casePopup">
+        <h3 id="popupTitle"></h3>
+        <p><strong>Severity:</strong> <span id="popupSeverity"></span></p>
+        <p><strong>Location:</strong> <span id="popupLocation"></span></p>
+        <p><strong>Uploaded by:</strong> <span id="popupUploader"></span></p>
+        <p><strong>Date:</strong> <span id="popupDate"></span></p>
+        <label for="completionImage">Upload Completion Image:</label>
+        <input type="file" id="completionImage">
+        <label for="assignPerson">Assign to:</label>
+        <input type="text" id="assignPerson">
+        <label for="status">Status:</label>
+        <select id="status">
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+        </select>
+        <button class="btn btn-primary" onclick="saveCase()">Save</button>
+        <button class="btn btn-secondary" onclick="closePopup()">Close</button>
+    </div>
+    <script>
+        let cases = [
+            { id: 101, severity: 'High', location: 'Main Street', uploader: 'John Doe', date: '24-02-2025', image: 'road_damage.jpg', assigned: '', status: 'Pending' },
+            { id: 102, severity: 'Moderate', location: '2nd Avenue', uploader: 'Jane Smith', date: '23-02-2025', image: 'road_crack.jpg', assigned: '', status: 'Pending' },
+            { id: 103, severity: 'Low', location: 'Park Road', uploader: 'Alex Johnson', date: '22-02-2025', image: 'pothole.jpg', assigned: '', status: 'Pending' }
+        ];
+        let selectedCaseId = null;
+
+        function renderCases() {
+            let caseList = document.getElementById('caseList');
+            caseList.innerHTML = '';
+            cases.forEach(c => {
+                let caseCard = `<div class="card" onclick="openPopup(${c.id})">
+                    <div class="card-text">
+                        <h3>Case ${c.id}</h3>
+                        <p><strong>Severity:</strong> ${c.severity}</p>
+                        <p><strong>Location:</strong> ${c.location}</p>
+                        <p><strong>Uploaded by:</strong> ${c.uploader}</p>
+                        <p><strong>Date:</strong> ${c.date}</p>
+                        <p><strong>Status:</strong> ${c.status}</p>
+                        <p><strong>Assigned to:</strong> ${c.assigned || 'Not Assigned'}</p>
+                    </div>
+                    <img src="${c.image}" alt="Case Image" class="card-image">
+                </div>`;
+                caseList.innerHTML += caseCard;
+            });
+        }
+
+        function openPopup(caseId) {
+            selectedCaseId = caseId;
+            document.getElementById('casePopup').style.display = 'block';
+        }
+
+        function saveCase() {
+            let assignedPerson = document.getElementById('assignPerson').value;
+            let status = document.getElementById('status').value;
+            cases.find(c => c.id === selectedCaseId).assigned = assignedPerson;
+            cases.find(c => c.id === selectedCaseId).status = status;
+            closePopup();
+            renderCases();
+        }
+
+        function closePopup() {
+            document.getElementById('casePopup').style.display = 'none';
+        }
+
+        window.onload = renderCases;
+    </script>
+</body>
+</html>
