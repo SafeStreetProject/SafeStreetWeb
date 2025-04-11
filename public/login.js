@@ -3,7 +3,7 @@ let eyeopen = document.getElementById("eye-open");
 let eyeclose = document.getElementById("eye-close");
 let submit =  document.getElementById("submit");
 let error = document.getElementById("email_error");
-let email = document.getElementById("email");
+let email = document.getElementById("ID");
 eyeclose.onclick = () => {
     if(password.type === "password"){
         password.type  = "text";
@@ -24,7 +24,7 @@ fetch('/login',{
     headers : {
         'Content-Type' : 'application/json'
     },
-    body : JSON.stringify({email: email.value})
+    body : JSON.stringify({ID: ID.value})
 })
 .then(response => response.json())
 .then(data => {
