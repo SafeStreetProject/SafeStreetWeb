@@ -46,19 +46,25 @@ router.get("/index", (req, res) => {
 
 router.post('/signin', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const { ID, password } = req.body;
+    const user = await User.findOne({ idNumber: ID.toLowerCase() });
 
     if (!user) {
-      return res.render('signin', { error: 'Incorrect Email or Password' });
+      return res.render('signin', { error: 'Incorrect UserID or Password' });
     }
 
     console.log("Stored Password in DB:", user.password);
     console.log("Entered Password:", password);
-    const hashpassword = await bcrypt.hash(password, 10);
-    console.log("signin hashed: ",hashpassword);
-    const isPasswordValid = await bcrypt.compare(password.trim(), user.password);
-    
+    // const hashpassword = await bcrypt.hash("Kmit123$", 10);
+    // console.log("signin hashed: ",hashpassword);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    // const storedHash = '$2b$10$V6xrwVs8UuyW6kx4gL.elOgkP6jA6GLd6xtcPVC19sotCY7N3CDWe';
+    // const enteredPassword = 'Kmit123$';
+
+    // bcrypt.compare(enteredPassword, storedHash, (err, result) => {
+    //   if (err) console.error(err);
+    //   console.log("Does Kmit123$ match the stored hash?", result); // Will print false
+    // });
     if (!isPasswordValid) {
       console.log("Invalid password");
       return res.render('signin', { error: 'Incorrect Email or Password' });
@@ -109,6 +115,12 @@ router.get("/help", (req, res) => {
       return res.redirect("/login"); // Redirect if not logged in
   }
   res.render("help", { user: req.user });
+});
+router.get("/changepassword", (req, res) => {
+  if (!req.user) {
+      return res.redirect("/login"); // Redirect if not logged in
+  }
+  res.render("changepassword", { user: req.user });
 });
 router.get('/upload', (req, res) => {
   res.render('upload', {
