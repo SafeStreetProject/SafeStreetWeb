@@ -96,6 +96,12 @@ const userSchema = new Schema({
         unique: true, // Ensure emails are unique
         lowercase: true, // Store in lowercase for case-insensitive search
     },
+    role: {
+        type: String,
+        enum: ["USER", "ADMIN"],
+        default: "USER",
+    },
+    
 }, { timestamps: true });
 
 // Hash password before saving (if modified)

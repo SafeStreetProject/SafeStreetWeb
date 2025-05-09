@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SafeStreet Management</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSS7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
@@ -44,7 +44,7 @@
             padding: 10px;
             text-decoration: none;
         }
-        .sidebar #a:hover {
+        .sidebar a:hover {
             background-color: #495057;
         }
         .content {
@@ -80,6 +80,13 @@
             object-fit: cover;
             margin-left: 20px;
         }
+        .card .completion-image {
+            width: 100px;
+            height: 60px;
+            border-radius: 5px;
+            object-fit: cover;
+            margin-top: 5px;
+        }
         .popup {
             display: none;
             position: fixed;
@@ -91,6 +98,7 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.2);
             border-radius: 10px;
             width: 400px;
+            z-index: 2000;
         }
         .popup label {
             font-weight: bold;
@@ -107,96 +115,477 @@
         .popup button {
             margin-top: 10px;
         }
+        .popup img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .error-message {
+            color: red;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .no-cases {
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            margin-top: 20px;
+        }
+        .loading-spinner {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 0.25rem solid rgba(0, 0, 0, 0.1);
+            border-right-color: #007bff;
+            border-radius: 50%;
+            animation: spinner 0.75s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spinner {
+            to { transform: rotate(360deg); }
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1999;
+            display: none;
+        }
+        .mock-data-button {
+            margin-top: 20px;
+        }
+        .sort-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        .sort-container label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .sort-container select {
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <h2><img src="/images/logo.png" height="25px" width="30px">SafeStreet</h2>
-        <div> 
+        <h2><img src="/images/logo.png" height="25px" width="30px" alt="SafeStreet Logo">SafeStreet</h2>
+        <div>
             <% if (locals.user) { %>
-                <p style="color: #f8f9fa;font-size: 20px;font-family: Arial, Helvetica, sans-serif;padding-bottom: -20px;"></i><%= locals.user.FirstName %> <i class="fa-solid fa-user"></i></p>
+                <p style="color: #f8f9fa; font-size: 20px; font-family: Arial, Helvetica, sans-serif; margin: 0;">
+                    <%= locals.user.FirstName %> <i class="fa-solid fa-user"></i>
+                </p>
             <% } %>
         </div>
     </div>
     <div class="sidebar">
-        <a id="a" href="dashboard">Dashboard</a>
-        <a id="a" href="reports">Reports</a>
-        <a id="a" href="map">Map Overview</a>
-        <a id="a" href="management">Management</a>
-        <a id="a" href="help">Help</a>
-        <a id="a" href="changepassword">Change Password</a>
-        <button class="btn btn-danger w-100 mt-3"><a href="/user/logout">Logout</a></button>
+        <a href="/user/dashboard">Dashboard</a>
+        <a href="/user/reports">Reports</a>
+        <a href="/user/map">Map Overview</a>
+        <a href="/user/management">Management</a>
+        <a href="/user/help">Help</a>
+        <a href="/user/changepassword">Change Password</a>
+        <button class="btn btn-danger w-100 mt-3"><a href="/user/logout" style="color: white; text-decoration: none;">Logout</a></button>
     </div>
     <div class="content" id="management">
         <h1>Case Management</h1>
+        <div class="sort-container">
+            <div>
+                <label for="sortStatus">Sort by Status:</label>
+                <select id="sortStatus" onchange="sortCases()">
+                    <option value="all">All</option>
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                </select>
+            </div>
+            <div>
+                <label for="sortSeverity">Sort by Severity:</label>
+                <select id="sortSeverity" onchange="sortCases()">
+                    <option value="all">All</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+        </div>
+        <div id="error-message" class="error-message" style="display: none;"></div>
+        <div id="loading-indicator" class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading case data...</p>
+        </div>
         <div id="caseList"></div>
+        <div class="mock-data-button text-center" id="mockDataContainer" style="display: none;">
+            <p>No cases found or error loading data.</p>
+            <button class="btn btn-primary" onclick="loadMockData()">Load Sample Data</button>
+        </div>
     </div>
+    <div class="overlay" id="overlay"></div>
     <div class="popup" id="casePopup">
         <h3 id="popupTitle"></h3>
         <p><strong>Severity:</strong> <span id="popupSeverity"></span></p>
         <p><strong>Location:</strong> <span id="popupLocation"></span></p>
         <p><strong>Uploaded by:</strong> <span id="popupUploader"></span></p>
         <p><strong>Date:</strong> <span id="popupDate"></span></p>
+        <div id="completionImagePreview"></div>
         <label for="completionImage">Upload Completion Image:</label>
-        <input type="file" id="completionImage">
+        <input type="file" id="completionImage" accept="image/*">
         <label for="assignPerson">Assign to:</label>
         <input type="text" id="assignPerson">
         <label for="status">Status:</label>
         <select id="status">
-            <option value="Pending">Pending</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
+            <option value="pending">Pending</option>
+            <option value="in-progress">In Progress</option>
+            <option value="resolved">Resolved</option>
         </select>
         <button class="btn btn-primary" onclick="saveCase()">Save</button>
         <button class="btn btn-secondary" onclick="closePopup()">Close</button>
     </div>
     <script>
-        let cases = [
-            { id: 101, severity: 'High', location: 'Main Street', uploader: 'John Doe', date: '24-02-2025', image: 'road_damage.jpg', assigned: '', status: 'Pending' },
-            { id: 102, severity: 'Moderate', location: '2nd Avenue', uploader: 'Jane Smith', date: '23-02-2025', image: 'road_crack.jpg', assigned: '', status: 'Pending' },
-            { id: 103, severity: 'Low', location: 'Park Road', uploader: 'Alex Johnson', date: '22-02-2025', image: 'pothole.jpg', assigned: '', status: 'Pending' }
-        ];
+        let cases = [];
         let selectedCaseId = null;
+        let debugMode = false;
+        const API_BASE_URL = 'http://192.168.114.132:3000';
 
         function renderCases() {
-            let caseList = document.getElementById('caseList');
+            const caseList = document.getElementById('caseList');
             caseList.innerHTML = '';
-            cases.forEach(c => {
-                let caseCard = `<div class="card" onclick="openPopup(${c.id})">
-                    <div class="card-text">
-                        <h3>Case ${c.id}</h3>
-                        <p><strong>Severity:</strong> ${c.severity}</p>
-                        <p><strong>Location:</strong> ${c.location}</p>
-                        <p><strong>Uploaded by:</strong> ${c.uploader}</p>
-                        <p><strong>Date:</strong> ${c.date}</p>
-                        <p><strong>Status:</strong> ${c.status}</p>
-                        <p><strong>Assigned to:</strong> ${c.assigned || 'Not Assigned'}</p>
-                    </div>
-                    <img src="${c.image}" alt="Case Image" class="card-image">
-                </div>`;
+            if (cases.length === 0) {
+                caseList.innerHTML = '<p class="no-cases">No cases available.</p>';
+                document.getElementById('mockDataContainer').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('mockDataContainer').style.display = 'none';
+
+            // Apply sorting based on the selected status and severity
+            let filteredCases = [...cases];
+            const sortStatus = document.getElementById('sortStatus').value;
+            const sortSeverity = document.getElementById('sortSeverity').value;
+
+            if (sortStatus !== 'all') {
+                filteredCases = filteredCases.filter(c => c.status === sortStatus);
+            }
+            if (sortSeverity !== 'all') {
+                filteredCases = filteredCases.filter(c => c.severity.toLowerCase() === sortSeverity);
+            }
+
+            if (filteredCases.length === 0) {
+                let message = 'No cases available';
+                if (sortStatus !== 'all' || sortSeverity !== 'all') {
+                    message = 'No';
+                    if (sortStatus !== 'all') {
+                        message += ` ${sortStatus}`;
+                    }
+                    if (sortSeverity !== 'all') {
+                        message += ` ${sortSeverity}`;
+                    }
+                    message += ' cases available';
+                }
+                caseList.innerHTML = `<p class="no-cases">${message}.</p>`;
+                return;
+            }
+
+            filteredCases.forEach((c, index) => {
+                let imageUrl = c.image;
+                if (imageUrl && !imageUrl.startsWith('http')) {
+                    imageUrl = `${API_BASE_URL}${imageUrl}`;
+                }
+                let completionImageUrl = c.completionImage;
+                if (completionImageUrl && !completionImageUrl.startsWith('http')) {
+                    completionImageUrl = `${API_BASE_URL}${completionImageUrl}`;
+                }
+
+                const caseCard = `
+                    <div class="card" onclick="openPopup('${c.id}')">
+                        <div class="card-text">
+                            <h3>Case ${index + 1}</h3>
+                            <p><strong>Severity:</strong> ${c.severity}</p>
+                            <p><strong>Location:</strong> ${c.location}</p>
+                            <p><strong>Uploaded by:</strong> ${c.uploader}</p>
+                            <p><strong>Date:</strong> ${c.date}</p>
+                            <p><strong>Status:</strong> ${c.status}</p>
+                            <p><strong>Assigned to:</strong> ${c.assigned || 'Not Assigned'}</p>
+                            ${completionImageUrl ? `<p><strong>Completion Image:</strong><br><img src="${completionImageUrl}" alt="Completion Image" class="completion-image"></p>` : ''}
+                        </div>
+                        <img src="${imageUrl}" alt="Case Image" class="card-image" onerror="this.src='https://via.placeholder.com/150x100?text=No+Image'">
+                    </div>`;
                 caseList.innerHTML += caseCard;
             });
         }
 
-        function openPopup(caseId) {
-            selectedCaseId = caseId;
-            document.getElementById('casePopup').style.display = 'block';
+        function sortCases() {
+            renderCases();
         }
 
-        function saveCase() {
-            let assignedPerson = document.getElementById('assignPerson').value;
+        function openPopup(caseId) {
+            selectedCaseId = caseId;
+            const caseData = cases.find(c => c.id === caseId);
+            if (!caseData) return;
+
+            // Find the display index (case number) for the popup title
+            const sortStatus = document.getElementById('sortStatus').value;
+            const sortSeverity = document.getElementById('sortSeverity').value;
+            let filteredCases = [...cases];
+            if (sortStatus !== 'all') {
+                filteredCases = filteredCases.filter(c => c.status === sortStatus);
+            }
+            if (sortSeverity !== 'all') {
+                filteredCases = filteredCases.filter(c => c.severity.toLowerCase() === sortSeverity);
+            }
+            const displayIndex = filteredCases.findIndex(c => c.id === caseId) + 1;
+
+            document.getElementById('popupTitle').textContent = `Case ${displayIndex}`;
+            document.getElementById('popupSeverity').textContent = caseData.severity;
+            document.getElementById('popupLocation').textContent = caseData.location;
+            document.getElementById('popupUploader').textContent = caseData.uploader;
+            document.getElementById('popupDate').textContent = caseData.date;
+            document.getElementById('assignPerson').value = caseData.assigned || '';
+            document.getElementById('status').value = caseData.status || 'pending';
+
+            // Display current completion image if it exists
+            const completionImagePreview = document.getElementById('completionImagePreview');
+            if (caseData.completionImage) {
+                let completionImageUrl = caseData.completionImage;
+                if (completionImageUrl && !completionImageUrl.startsWith('http')) {
+                    completionImageUrl = `${API_BASE_URL}${completionImageUrl}`;
+                }
+                completionImagePreview.innerHTML = `<img src="${completionImageUrl}" alt="Current Completion Image">`;
+            } else {
+                completionImagePreview.innerHTML = '';
+            }
+            document.getElementById('completionImage').value = '';
+
+            document.getElementById('casePopup').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        async function saveCase() {
+            const assigned = document.getElementById('assignPerson').value;
             let status = document.getElementById('status').value;
-            cases.find(c => c.id === selectedCaseId).assigned = assignedPerson;
-            cases.find(c => c.id === selectedCaseId).status = status;
+            const completionImage = document.getElementById('completionImage').files[0];
+
+            // Map frontend status to backend status
+            if (status === 'completed') {
+                status = 'resolved'; // Backend expects 'resolved' instead of 'completed'
+            }
+
+            const formData = new FormData();
+            formData.append('caseId', selectedCaseId);
+            formData.append('assigned', assigned);
+            formData.append('status', status);
+            if (completionImage) {
+                formData.append('completionImage', completionImage);
+            }
+
+            try {
+                const token = getAuthToken();
+                
+                const response = await fetch(`${API_BASE_URL}/api/update-case`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData,
+                    credentials: 'omit'
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Save case result:', result);
+
+                // Refetch the case data to get the updated completionImage
+                await fetchCaseData();
+                alert('Case updated successfully!');
+            } catch (error) {
+                console.error('Error saving case:', error);
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.textContent = error.message || 'Failed to save case.';
+                errorDiv.style.display = 'block';
+                
+                if (error.message.includes('token') || error.message.includes('authentication')) {
+                    setTimeout(() => {
+                        window.location.href = '/user/signin';
+                    }, 3000);
+                }
+            }
             closePopup();
-            renderCases();
         }
 
         function closePopup() {
             document.getElementById('casePopup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+            selectedCaseId = null;
         }
 
-        window.onload = renderCases;
+        function getAuthToken() {
+            const ejsToken = '<%= locals.token || "" %>';
+            if (ejsToken && ejsToken !== '<%= locals.token || "" %>') {
+                console.log('Using token from EJS template:', ejsToken);
+                return ejsToken;
+            }
+
+            const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('token='));
+            if (tokenCookie) {
+                console.log('Using token from cookies:', tokenCookie.split('=')[1]);
+                return tokenCookie.split('=')[1];
+            }
+
+            const localToken = localStorage.getItem('token');
+            if (localToken) {
+                console.log('Using token from localStorage:', localToken);
+                return localToken;
+            }
+
+            console.log('No token found');
+            return '';
+        }
+
+        function logDebug(message, data) {
+            if (!debugMode) return;
+            console.log(message, data);
+        }
+
+        function loadMockData() {
+            cases = [
+                {
+                    id: 'case123456',
+                    severity: 'High',
+                    location: 'Main Street & 5th Avenue',
+                    uploader: 'John Doe',
+                    date: '2023-05-15',
+                    status: 'pending',
+                    assigned: '',
+                    image: 'https://via.placeholder.com/300x150?text=Pothole+1',
+                    completionImage: ''
+                },
+                {
+                    id: 'case789012',
+                    severity: 'Medium',
+                    location: 'Park Road & Oak Street',
+                    uploader: 'Jane Smith',
+                    date: '2023-05-16',
+                    status: 'in-progress',
+                    assigned: 'Mike Johnson',
+                    image: 'https://via.placeholder.com/300x150?text=Pothole+2',
+                    completionImage: ''
+                },
+                {
+                    id: 'case345678',
+                    severity: 'Low',
+                    location: 'River Drive & Pine Avenue',
+                    uploader: 'Robert Brown',
+                    date: '2023-05-17',
+                    status: 'resolved',
+                    assigned: 'Sarah Williams',
+                    image: 'https://via.placeholder.com/300x150?text=Pothole+3',
+                    completionImage: 'https://via.placeholder.com/300x150?text=Completed'
+                }
+            ];
+            renderCases();
+            
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'none';
+        }
+
+        async function fetchCaseData() {
+            const errorDiv = document.getElementById('error-message');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            errorDiv.style.display = 'none';
+            loadingIndicator.style.display = 'block';
+
+            try {
+                const token = getAuthToken();
+                logDebug('Token for API request', token ? token : 'No token');
+
+                if (!token) {
+                    throw new Error('Authentication token missing. Please log in again.');
+                }
+
+                const apiUrl = `${API_BASE_URL}/api/get-management-cases`;
+                logDebug('Fetching from API URL', apiUrl);
+
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+
+                logDebug('API Response Status', response.status);
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Authentication failed: Invalid or expired token. Please log in again.');
+                    } else if (response.status === 403) {
+                        throw new Error('Authorization failed: You do not have permission to access this resource.');
+                    }
+
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+
+                const data = await response.json();
+                logDebug('API Response Data', data);
+
+                if (data.success && data.data) {
+                    cases = data.data.cases || [];
+                    logDebug('Cases loaded', cases.length);
+                    renderCases();
+                } else {
+                    throw new Error('Invalid response data: ' + JSON.stringify(data));
+                }
+            } catch (error) {
+                console.error('Error fetching case data:', error);
+                logDebug('Error fetching case data', error.message);
+                errorDiv.textContent = `Failed to fetch case data: ${error.message}`;
+                errorDiv.style.display = 'block';
+                document.getElementById('mockDataContainer').style.display = 'block';
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        document.getElementById('overlay').addEventListener('click', closePopup);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const userRole = '<%= locals.user && locals.user.role || "" %>';
+            logDebug('User role', userRole);
+            
+            if (userRole && userRole !== '<%= locals.user && locals.user.role || "" %>' && userRole !== 'admin') {
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.textContent = 'You do not have permission to access this page. Admin role required.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            fetchCaseData();
+            const updateInterval = setInterval(fetchCaseData, 30000);
+
+            window.addEventListener('beforeunload', function() {
+                clearInterval(updateInterval);
+            });
+        });
     </script>
 </body>
 </html>

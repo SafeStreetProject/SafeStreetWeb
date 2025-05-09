@@ -1,17 +1,17 @@
 const JWT = require("jsonwebtoken");
-const secret = "$hacunamatata"; // 
+const secret = process.env.JWT_SECRET;; // 
 
 function createTokenForUser(user) {
     const payload = {
         idNumber: user.idNumber, // 
-        // email: user.email,
-        // role: user.role,
+        email: user.email,
+        role: user.role,
          FirstName: user.FirstName,
-         email: user.email,
+         
     };
 
     // ✅ Set token expiry
-    return JWT.sign(payload, secret, { expiresIn: "1h" });
+    return JWT.sign(payload, secret, { expiresIn: "2h" });
 }
 
 function validateToken(token) {

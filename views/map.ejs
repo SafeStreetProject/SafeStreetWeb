@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SafeStreet - Map Overview</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Leaflet.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSS7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
     <style>
         body, html {
             margin: 0;
@@ -17,7 +15,6 @@
             width: 100%;
             display: flex;
         }
-        
         .navbar {
             width: 100%;
             background-color: #343a40;
@@ -48,10 +45,9 @@
             padding: 10px;
             text-decoration: none;
         }
-        .sidebar #a:hover {
+        .sidebar a:hover {
             background-color: #495057;
         }
-        /* Main content area */
         .content {
             margin-left: 250px;
             margin-top: 60px;
@@ -59,14 +55,10 @@
             width: calc(100vw - 250px);
             position: relative;
         }
-
-        /* Map should cover remaining screen */
         #map {
             width: 100%;
             height: 100%;
         }
-
-        /* Legend should always stay fixed */
         .legend {
             position: absolute;
             top: 10px;
@@ -81,101 +73,321 @@
             gap: 20px;
             z-index: 1000;
         }
-
         .legend div {
             display: flex;
             align-items: center;
             gap: 5px;
         }
-
         .legend span {
             width: 12px;
             height: 12px;
             display: inline-block;
             border-radius: 50%;
         }
-
+        .error-message {
+            color: red;
+            margin: 20px;
+            text-align: center;
+            font-size: 18px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+        }
+        .no-cases {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #666;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+        }
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 0.25rem solid rgba(0, 0, 0, 0.1);
+            border-right-color: #007bff;
+            border-radius: 50%;
+            animation: spinner 0.75s linear infinite;
+        }
+        @keyframes spinner {
+            to { transform: rotate(360deg); }
+        }
+        /* Custom Tooltip Styling */
+        .leaflet-tooltip.custom-tooltip {
+            max-width: 220px;
+            min-width: 200px;
+            white-space: normal;
+            font-size: 11px;
+            line-height: 1.3;
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        }
+        .leaflet-tooltip.custom-tooltip b {
+            font-weight: 600;
+        }
+        .leaflet-tooltip.custom-tooltip img {
+            max-width: 100px;
+            height: auto;
+            border-radius: 4px;
+            margin-top: 5px;
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <h2><img src="/images/logo.png" height="25px" width="30px">SafeStreet</h2>
-        <div> 
+        <h2><img src="/images/logo.png" height="25px" width="30px" alt="SafeStreet Logo">SafeStreet</h2>
+        <div>
             <% if (locals.user) { %>
-                <p style="color: #f8f9fa;font-size: 20px;font-family: Arial, Helvetica, sans-serif;padding-bottom: -20px;"></i><%= locals.user.FirstName %> <i class="fa-solid fa-user"></i></p>
+                <p style="color: #f8f9fa; font-size: 20px; font-family: Arial, Helvetica, sans-serif; margin: 0;">
+                    <%= locals.user.FirstName %> <i class="fa-solid fa-user"></i>
+                </p>
             <% } %>
         </div>
     </div>
-    <!-- Sidebar -->
     <div class="sidebar">
-        <a id="a" href="dashboard">Dashboard</a>
-        <a id="a" href="reports">Reports</a>
-        <a id="a" href="map">Map Overview</a>
-        <a id="a" href="management">Management</a>
-        <a id="a" href="help">Help</a>
-        <a id="a" href="changepassword">Change Password</a>
-        <button class="btn btn-danger w-100 mt-3"><a href="/user/logout">Logout</a></button>
+        <a href="/user/dashboard">Dashboard</a>
+        <a href="/user/reports">Reports</a>
+        <a href="/user/map">Map Overview</a>
+        <a href="/user/management">Management</a>
+        <a href="/user/help">Help</a>
+        <a href="/user/changepassword">Change Password</a>
+        <button class="btn btn-danger w-100 mt-3"><a href="/user/logout" style="color: white; text-decoration: none;">Logout</a></button>
     </div>
-
-    <!-- Top Navbar -->
-    <!-- <div class="topbar">Map Overview</div> -->
-
-    <!-- Main Content -->
     <div class="content">
         <div id="map"></div>
         <div class="legend">
             <div><span style="background: red;"></span> Pending</div>
             <div><span style="background: yellow;"></span> In Progress</div>
-            <div><span style="background: green;"></span> Completed</div>
+            <div><span style="background: green;"></span> Resolved</div>
         </div>
+        <div id="no-cases" class="no-cases" style="display: none;">No pothole cases to display on map</div>
+        <div id="loading-indicator" class="loading-spinner" style="display: block;">
+            <div class="spinner"></div>
+            <p>Loading map data...</p>
+        </div>
+        <div id="fetch-error" class="error-message" style="display: none;"></div>
     </div>
-
-    <!-- Leaflet.js Script -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Initialize Map
-            var map = L.map('map').setView([17.3850, 78.4867], 12); // Hyderabad default location
+            const map = L.map('map').setView([17.3850, 78.4867], 12); // Hyderabad default
 
             // Add OpenStreetMap Tile Layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            // Sample Report Data (Replace with actual API data)
-            var reportData = [
-                { lat: 17.4065, lng: 78.4772, status: "pending", location: "Street 1", date: "2025-02-22", name: "Omkar" },
-                { lat: 17.4210, lng: 78.5093, status: "completed", location: "Street 45", date: "2025-02-20", name: "ganesh" },
-                { lat: 17.3956, lng: 78.4822, status: "in-progress", location: "Highway 21", date: "2025-02-19", name: "nithin" },
-                { lat: 17.4100, lng: 78.4500, status: "pending", location: "Street 12", date: "2025-02-23",name: "shiva" },
-                { lat: 17.4280, lng: 78.4985, status: "completed", location: "Street 77", date: "2025-02-15", name: "mani" },
-                { lat: 17.3800, lng: 78.4700, status: "in-progress", location: "Street 35", date: "2025-02-18", name: "santhosh" }
-            ];
-
             // Status Colors
-            var statusColors = {
+            const statusColors = {
                 "pending": "red",
                 "in-progress": "yellow",
-                "completed": "green"
+                "resolved": "green"
             };
 
-            // Add Circles to Map
-            reportData.forEach(function (report) {
-                var circle = L.circleMarker([report.lat, report.lng], {
-                    color: statusColors[report.status],
-                    fillColor: statusColors[report.status],
-                    fillOpacity: 0.9,
-                    radius: 7
-                }).addTo(map);
+            // Keep track of markers to update them
+            let markers = [];
 
-                // Show popup on hover
-                circle.bindTooltip(`<b>${report.location}</b><br>Date: ${report.date}<br>Uploaded by: ${report.name}`, {
-                    permanent: false,
-                    direction: "top"
-                });
+            // Validate JWT format
+            function isValidJwt(token) {
+                if (!token || typeof token !== 'string') {
+                    console.warn('isValidJwt: Token is empty or not a string');
+                    return false;
+                }
+                const parts = token.split('.');
+                return parts.length === 3 && parts.every(part => part.length > 0);
+            }
+
+            // Function to get token from cookie (fallback if locals.token is empty)
+            function getTokenFromCookie() {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith('token=')) {
+                        return cookie.substring('token='.length, cookie.length);
+                    }
+                }
+                return null;
+            }
+
+            // Function to get token
+            function getToken() {
+                let token = '<%= locals.token || "" %>';
+                if (!token || token === '""' || token === '') {
+                    token = getTokenFromCookie();
+                    console.log('Got token from cookie:', token ? 'Token found' : 'No token in cookie');
+                }
+                return token;
+            }
+
+            // Function to update map with report data
+            async function updateMapData() {
+                const noCasesElement = document.getElementById('no-cases');
+                const fetchErrorElement = document.getElementById('fetch-error');
+                const loadingIndicator = document.getElementById('loading-indicator');
+
+                loadingIndicator.style.display = 'block';
+                fetchErrorElement.style.display = 'none';
+                noCasesElement.style.display = 'none';
+
+                try {
+                    const token = getToken();
+
+                    if (!token) {
+                        console.error('Token not available for fetching data');
+                        fetchErrorElement.textContent = 'Authentication token missing. Please log in again.';
+                        fetchErrorElement.style.display = 'block';
+                        setTimeout(() => {
+                            window.location.href = '/user/signin';
+                        }, 3000);
+                        return;
+                    }
+
+                    if (!isValidJwt(token)) {
+                        console.error('Invalid token detected:', token);
+                        fetchErrorElement.textContent = 'Invalid authentication token. Please log in again.';
+                        fetchErrorElement.style.display = 'block';
+                        setTimeout(() => {
+                            window.location.href = '/user/signin';
+                        }, 3000);
+                        return;
+                    }
+
+                    console.log('Fetching map reports with token:', token);
+                    const response = await fetch('http://192.168.114.132:3000/api/get-map-reports', {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+
+                    console.log('Map Reports Response Status:', response.status);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Map reports error:', errorText);
+                        if (response.status === 401) {
+                            console.error('Authentication error:', errorText);
+                            fetchErrorElement.textContent = 'Authentication failed: Invalid or expired token. Please log in again.';
+                            fetchErrorElement.style.display = 'block';
+                            setTimeout(() => {
+                                window.location.href = '/user/signin';
+                            }, 3000);
+                            return;
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('Fetched map reports:', data);
+
+                    if (data.success && data.data) {
+                        const reportData = data.data.reports || [];
+
+                        // Clear existing markers
+                        markers.forEach(marker => map.removeLayer(marker));
+                        markers = [];
+
+                        // Show "No cases" message if no reports
+                        if (reportData.length === 0) {
+                            noCasesElement.style.display = 'block';
+                            return;
+                        }
+
+                        // Add new markers
+                        reportData.forEach(function (report) {
+                            // Skip invalid coordinates
+                            if (!report.lat || !report.lng || report.lat === 0 || report.lng === 0) {
+                                console.warn(`Skipping report with invalid coordinates: ${report.location}`);
+                                return;
+                            }
+
+                            const circle = L.circleMarker([report.lat, report.lng], {
+                                color: statusColors[report.status] || "gray",
+                                fillColor: statusColors[report.status] || "gray",
+                                fillOpacity: 0.9,
+                                radius: 7
+                            }).addTo(map);
+
+                            // Prepare tooltip content
+                            let tooltipContent = `
+                                <b>${report.location}</b><br>
+                                Date: ${report.date}<br>
+                                Uploaded by: ${report.name}<br>
+                                Status: ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}<br>
+                                Assigned to: ${report.assigned || 'Not Assigned'}
+                            `;
+                            if (report.completionImage) {
+                                tooltipContent += `<br><img src="${report.completionImage}" alt="Completion Image" onerror="this.style.display='none';">`;
+                            }
+
+                            circle.bindTooltip(
+                                tooltipContent,
+                                { 
+                                    permanent: false, 
+                                    direction: "top",
+                                    className: "custom-tooltip"
+                                }
+                            );
+
+                            markers.push(circle);
+                        });
+
+                        fetchErrorElement.style.display = 'none';
+                    } else {
+                        throw new Error('Invalid response data: ' + JSON.stringify(data));
+                    }
+                } catch (error) {
+                    console.error('Error fetching map data:', error.message);
+                    fetchErrorElement.textContent = `Failed to fetch map data: ${error.message}`;
+                    fetchErrorElement.style.display = 'block';
+                    const loginButton = document.createElement('button');
+                    loginButton.className = 'btn btn-primary mt-3';
+                    loginButton.textContent = 'Go to Login';
+                    loginButton.onclick = function() {
+                        window.location.href = '/user/signin';
+                    };
+                    fetchErrorElement.appendChild(document.createElement('br'));
+                    fetchErrorElement.appendChild(loginButton);
+                } finally {
+                    loadingIndicator.style.display = 'none';
+                }
+            }
+
+            // Initial fetch and poll every 30 seconds
+            updateMapData();
+            const updateInterval = setInterval(updateMapData, 30000);
+
+            // Cleanup on page unload
+            window.addEventListener('beforeunload', function() {
+                clearInterval(updateInterval);
             });
         });
     </script>
-
 </body>
 </html>

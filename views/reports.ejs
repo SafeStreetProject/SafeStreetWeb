@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SafeStreet Reports</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSS7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -32,7 +33,7 @@
         }
         .sidebar {
             width: 250px;
-            height: 100vh;
+            height: calc(100vh - 50px);
             background-color: #343a40;
             color: white;
             padding: 15px;
@@ -46,7 +47,7 @@
             padding: 10px;
             text-decoration: none;
         }
-        .sidebar #a:hover {
+        .sidebar a:hover {
             background-color: #495057;
         }
         .content {
@@ -78,18 +79,12 @@
         .card:hover {
             transform: scale(1.05);
         }
-        /* .content {
-            flex-grow: 1;
-            padding: 20px;
-            margin-left: 270px;
-            margin-top: 70px;
-            text-align: center;
-        } */
         .charts-container {
             display: flex;
             justify-content: center;
             gap: 30px;
             flex-wrap: wrap;
+            margin-top: 30px;
         }
         .chart-box {
             width: 45%;
@@ -97,194 +92,342 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            min-height: 300px;
+        }
+        .chart-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #666;
         }
         .cases-container {
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 20px;
+            flex-direction: row;
+            gap: 15px;
+            padding: 10px;
+            overflow-x: auto;
         }
         .case-card {
-            width: 300px;
-            background: white;
+            flex: 0 0 33%;
+            display: flex;
+            flex-direction: row;
+            background: #FFF;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin: 8px 0;
             padding: 15px;
-            text-align: left;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
             transition: transform 0.3s;
         }
         .case-card:hover {
-            transform: scale(1.05);
+            transform: scale(1.02);
+        }
+        .case-left-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .case-right-container {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .case-image {
             width: 100%;
-            height: 150px;
+            height: 100%;
+            border-radius: 8px;
             object-fit: cover;
-            border-radius: 10px;
+        }
+        .completion-image {
+            width: 100px;
+            height: 60px;
+            border-radius: 5px;
+            object-fit: cover;
+            margin-top: 5px;
         }
         .case-details {
             margin-top: 10px;
         }
-        .case-details h5 {
-            margin: 5px 0;
-            font-size: 18px;
+        .date-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .time-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .location-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+        .location-icon {
+            margin-right: 5px;
+        }
+        .location-text {
+            font-size: 14px;
+            color: #666;
+            flex-shrink: 1;
+        }
+        .uploader-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
         }
         .severity {
             font-weight: bold;
             padding: 5px 10px;
             border-radius: 5px;
+            display: inline-block;
+            margin-top: 5px;
         }
         .low { background: green; color: white; }
         .medium { background: orange; color: white; }
         .high { background: red; color: white; }
+        .confidence-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .status-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .assigned-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .error-message {
+            color: red;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            border: 0.25rem solid rgba(0, 0, 0, 0.1);
+            border-right-color: #007bff;
+            border-radius: 50%;
+            animation: spinner 0.75s linear infinite;
+        }
+        @keyframes spinner {
+            to { transform: rotate(360deg); }
+        }
+        .refresh-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+        .refresh-btn:hover {
+            background-color: #0056b3;
+        }
+        .refresh-btn i {
+            margin-right: 5px;
+        }
+        .session-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <h2><img src="/images/logo.png" height="25px" width="30px">SafeStreet</h2>
-        <div> 
+        <h2><img src="/images/logo.png" height="25px" width="30px" alt="SafeStreet Logo">SafeStreet</h2>
+        <div>
             <% if (locals.user) { %>
-                <p style="color: #f8f9fa;font-size: 20px;font-family: Arial, Helvetica, sans-serif;padding-bottom: -20px;"></i><%= locals.user.FirstName %> <i class="fa-solid fa-user"></i></p>
+                <p style="color: #f8f9fa; font-size: 20px; font-family: Arial, Helvetica, sans-serif;">
+                    <%= locals.user.FirstName %> <i class="fa-solid fa-user"></i>
+                </p>
             <% } %>
         </div>
     </div>
     <div class="sidebar">
-        <a id="a" href="dashboard">Dashboard</a>
-        <a id="a" href="reports">Reports</a>
-        <a id="a" href="map">Map Overview</a>
-        <a id="a" href="management">Management</a>
-        <a id="a" href="help">Help</a>
-        <a id="a" href="changepassword">Change Password</a>
-        <button class="btn btn-danger w-100 mt-3"><a href="/user/logout">Logout</a></button>
+        <a href="/user/dashboard">Dashboard</a>
+        <a href="/user/reports">Reports</a>
+        <a href="/user/map">Map Overview</a>
+        <a href="/user/management">Management</a>
+        <a href="/user/help">Help</a>
+        <a href="/user/changepassword">Change Password</a>
+        <button class="btn btn-danger w-100 mt-3"><a href="/user/logout" style="color: white; text-decoration: none;">Logout</a></button>
     </div>
+    
     <div class="content" id="reports">
         <h1>Reports Overview</h1>
+        <div id="session-warning" class="session-warning">
+            <i class="fas fa-exclamation-triangle"></i> Your session will expire soon. Please save your work.
+        </div>
+        
+        <button id="refresh-data" class="refresh-btn">
+            <i class="fas fa-sync-alt"></i> Refresh Data
+        </button>
+        
+        <div id="loading-indicator" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Loading data...</p>
+        </div>
+        
+        <div id="fetch-error" class="error-message" style="display: none;"></div>
+        
         <div class="case-cards">
             <div class="card">
-                <h3>Total Cases</h3>
-                <p>150</p>
+                <h3>Total Pothole Cases</h3>
+                <p id="totalCases"><%= totalCases || 0 %></p>
             </div>
             <div class="card">
                 <h3>Pending Cases</h3>
-                <p>50</p>
+                <p id="pendingCases"><%= pendingCases || 0 %></p>
             </div>
             <div class="card">
                 <h3>Completed Cases</h3>
-                <p>80</p>
+                <p id="completedCases"><%= completedCases || 0 %></p>
             </div>
             <div class="card">
                 <h3>In-Progress Cases</h3>
-                <p>20</p>
+                <p id="inProgressCases"><%= inProgressCases || 0 %></p>
             </div>
         </div>
     </div>
+    
     <div class="content" id="analytics">
         <h2>Data Analytics</h2>
         <div class="charts-container">
             <div class="chart-box">
                 <canvas id="casesChart"></canvas>
+                <div id="line-chart-placeholder" class="chart-placeholder">No recent cases</div>
             </div>
             <div class="chart-box">
                 <canvas id="casesPieChart"></canvas>
+                <div id="pie-chart-placeholder" class="chart-placeholder">No recent cases</div>
             </div>
         </div>
     </div>
-
-    <div class="content" id="reports">
+    
+    <div class="content" id="recent-reports">
         <h2>Recent Reports</h2>
-        <div class="cases-container">
-            <div class="case-card">
-                <img src="https://via.placeholder.com/300x150" alt="Road Damage" class="case-image">
-                <div class="case-details">
-                    <h5>Name: John Doe</h5>
-                    <p>Location: Main Street, NY</p>
-                    <p>Date: 22-Feb-2025</p>
-                    <p class="severity high">Severity: High</p>
-                </div>
-            </div>
-            <div class="case-card">
-                <img src="https://via.placeholder.com/300x150" alt="Road Damage" class="case-image">
-                <div class="case-details">
-                    <h5>Name: Sarah Lee</h5>
-                    <p>Location: Elm Avenue, CA</p>
-                    <p>Date: 20-Feb-2025</p>
-                    <p class="severity medium">Severity: Medium</p>
-                </div>
-            </div>
-            <div class="case-card">
-                <img src="https://via.placeholder.com/300x150" alt="Road Damage" class="case-image">
-                <div class="case-details">
-                    <h5>Name: Alex Brown</h5>
-                    <p>Location: Pine Street, TX</p>
-                    <p>Date: 18-Feb-2025</p>
-                    <p class="severity low">Severity: Low</p>
-                </div>
-            </div>
+        <div id="cases-container" class="cases-container">
+            <p id="no-reports-message">Loading recent reports...</p>
         </div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            function getLast30Days() {
-                let dates = [];
-                let today = new Date();
-                for (let i = 29; i >= 0; i--) {
-                    let pastDate = new Date();
-                    pastDate.setDate(today.getDate() - i);
-                    let formattedDate = pastDate.toISOString().split('T')[0]; 
-                    dates.push(formattedDate);
-                }
-                return dates;
+        // Validate JWT format
+        function isValidJwt(token) {
+            if (!token || typeof token !== 'string') {
+                console.warn('isValidJwt: Token is empty or not a string');
+                return false;
             }
-    
-            let lineCtx = document.getElementById('casesChart').getContext('2d');
-            let pieCtx = document.getElementById('casesPieChart').getContext('2d');
-    
-            // Create gradient effect for line chart
+            const parts = token.split('.');
+            return parts.length === 3 && parts.every(part => part.length > 0);
+        }
+
+        // Function to get token from cookie
+        function getTokenFromCookie() {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith('token=')) {
+                    return cookie.substring('token='.length, cookie.length);
+                }
+            }
+            return null;
+        }
+
+        // Function to get token
+        function getToken() {
+            let token = '<%= locals.token || "" %>';
+            if (!token || token === '""' || token === '') {
+                token = getTokenFromCookie();
+                console.log('Got token from cookie:', token ? 'Token found' : 'No token in cookie');
+            }
+            return token;
+        }
+
+        // Function to generate last 30 days for line chart labels
+        function getLast30Days() {
+            let dates = [];
+            let today = new Date();
+            for (let i = 29; i >= 0; i--) {
+                let pastDate = new Date();
+                pastDate.setDate(today.getDate() - i);
+                let formattedDate = pastDate.toISOString().split('T')[0];
+                dates.push(formattedDate);
+            }
+            return dates;
+        }
+
+        // Initialize charts with empty data
+        let lineChart = null;
+        let pieChart = null;
+
+        function initializeCharts(casesLast30Days = Array(30).fill(0), caseStats = { completed: 0, pending: 0, inProgress: 0 }) {
+            const lineCtx = document.getElementById('casesChart').getContext('2d');
             let gradient = lineCtx.createLinearGradient(0, 0, 0, 400);
             gradient.addColorStop(0, 'rgba(54, 162, 235, 0.6)');
             gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    
-            // Line Chart (Stock-like Graph)
-            new Chart(lineCtx, {
+
+            if (lineChart) {
+                lineChart.destroy();
+            }
+
+            lineChart = new Chart(lineCtx, {
                 type: 'line',
                 data: {
                     labels: getLast30Days(),
                     datasets: [{
                         label: 'Reported Cases (Last 30 Days)',
-                        data: Array.from({ length: 30 }, () => Math.floor(Math.random() * 20) + 1),
+                        data: casesLast30Days,
                         backgroundColor: gradient,
                         borderColor: 'rgba(54, 162, 235, 1)',
                         borderWidth: 2,
                         fill: true,
                         pointRadius: 3,
                         pointHoverRadius: 6,
-                        tension: 0.4 // Smooth curves
+                        tension: 0.4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: {
-                            ticks: { maxRotation: 90, minRotation: 45, autoSkip: true, maxTicksLimit: 10 }
-                        },
+                        x: { ticks: { maxRotation: 90, minRotation: 45, autoSkip: true, maxTicksLimit: 10 } },
                         y: { beginAtZero: true }
                     },
-                    plugins: {
-                        legend: { display: true }
-                    }
+                    plugins: { legend: { display: true } }
                 }
             });
-    
-            // Pie Chart (Case Distribution)
-            new Chart(pieCtx, {
+
+            const pieCtx = document.getElementById('casesPieChart').getContext('2d');
+            if (pieChart) {
+                pieChart.destroy();
+            }
+
+            pieChart = new Chart(pieCtx, {
                 type: 'pie',
                 data: {
                     labels: ["Completed Cases", "Pending Cases", "In-Progress Cases"],
                     datasets: [{
-                        data: [80, 50, 20], // Example case distribution
+                        data: [caseStats.completed, caseStats.pending, caseStats.inProgress],
                         backgroundColor: ["#28a745", "#dc3545", "#ffc107"]
                     }]
                 },
@@ -292,16 +435,266 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: "bottom" }
+                        legend: { position: "bottom" },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    let dataset = tooltipItem.dataset;
+                                    let currentValue = dataset.data[tooltipItem.dataIndex];
+                                    let total = dataset.data.reduce((sum, val) => sum + val, 0);
+                                    let percentage = total > 0 ? ((currentValue / total) * 100).toFixed(1) : 0;
+                                    return `${tooltipItem.label}: ${currentValue} (${percentage}%)`;
+                                }
+                            }
+                        }
                     }
                 }
             });
-    
+        }
+
+        // Function to render recent reports
+        function renderRecentReports(reports) {
+            const container = document.getElementById('cases-container');
+            const noReportsMessage = document.getElementById('no-reports-message');
+            
+            if (!reports || reports.length === 0) {
+                noReportsMessage.textContent = 'No recent reports with detected potholes available.';
+                return;
+            }
+            
+            noReportsMessage.style.display = 'none';
+            container.innerHTML = '';
+            
+            reports.forEach(report => {
+                const card = document.createElement('div');
+                card.className = 'case-card';
+                
+                const severity = report.severity ? report.severity.toLowerCase() : 'medium';
+                const imageUrl = report.imageUrl || 'https://via.placeholder.com/300x150';
+                const name = report.name || 'Unknown';
+                const location = report.location || 'Unknown location';
+                const date = report.date || new Date().toLocaleDateString();
+                const time = report.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const confidence = report.confidence || '0.00';
+                const status = report.status || 'pending';
+                const assigned = report.assigned || 'Not Assigned';
+                const completionImage = report.completionImage || '';
+                
+                // Log the image URL to debug
+                console.log('Rendering report with imageUrl:', imageUrl);
+                console.log('Rendering report with completionImage:', completionImage);
+                
+                card.innerHTML = `
+                    <div class="case-left-container">
+                        <div class="uploader-text">Uploader: ${name}</div>
+                        <div class="date-text">Date: ${date}</div>
+                        <div class="time-text">Time: ${time}</div>
+                        <div class="location-container">
+                            <i class="fas fa-map-marker-alt location-icon"></i>
+                            <div class="location-text">${location}</div>
+                        </div>
+                        <span class="severity ${severity}">Severity: ${severity.charAt(0).toUpperCase() + severity.slice(1)}</span>
+                        <div class="confidence-text">Confidence: ${confidence}%</div>
+                        <div class="status-text">Status: ${status.charAt(0).toUpperCase() + status.slice(1)}</div>
+                        <div class="assigned-text">Assigned to: ${assigned}</div>
+                        ${completionImage ? `<div class="completion-image-container"><strong>Completion Image:</strong><br><img src="${completionImage}" alt="Completion Image" class="completion-image" onerror="this.style.display='none';"></div>` : ''}
+                    </div>
+                    <div class="case-right-container">
+                        <img src="${imageUrl}" alt="Processed Pothole Image" class="case-image" onerror="console.error('Failed to load image:', '${imageUrl}'); this.src='https://via.placeholder.com/300x150';">
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Function to update all data
+        async function updateAllData() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const fetchError = document.getElementById('fetch-error');
+            const lineChartPlaceholder = document.getElementById('line-chart-placeholder');
+            const pieChartPlaceholder = document.getElementById('pie-chart-placeholder');
+            
+            loadingIndicator.style.display = 'block';
+            fetchError.style.display = 'none';
+            
+            try {
+                const token = getToken();
+                console.log('updateAllData - Using token:', token);
+                
+                if (!token) {
+                    console.error('Token not available for fetching data');
+                    fetchError.textContent = 'Authentication token missing. Please log in again.';
+                    fetchError.style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = '/user/signin';
+                    }, 3000);
+                    return;
+                }
+                
+                if (!isValidJwt(token)) {
+                    console.error('Invalid token detected:', token);
+                    fetchError.textContent = 'Invalid authentication token. Please log in again.';
+                    fetchError.style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = '/user/signin';
+                    }, 3000);
+                    return;
+                }
+                
+                // Fetch report statistics
+                console.log('Fetching report statistics with token');
+                const statsResponse = await fetch('http://192.168.114.132:3000/api/get-report-stats', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    }
+                });
+                
+                console.log('Stats Response Status:', statsResponse.status);
+                if (!statsResponse.ok) {
+                    const errorText = await statsResponse.text();
+                    console.error('Stats error:', errorText);
+                    if (statsResponse.status === 401) {
+                        console.error('Authentication error:', errorText);
+                        fetchError.textContent = 'Authentication failed: Invalid or expired token. Please log in again.';
+                        fetchError.style.display = 'block';
+                        setTimeout(() => {
+                            window.location.href = '/user/signin';
+                        }, 3000);
+                        return;
+                    }
+                    throw new Error(`HTTP error! status: ${statsResponse.status}, message: ${errorText}`);
+                }
+                
+                const statsData = await statsResponse.json();
+                console.log('Fetched report statistics:', statsData);
+                
+                if (statsData.success && statsData.data) {
+                    const totalCases = statsData.data.totalCases || 0;
+                    const pendingCases = statsData.data.pendingCases || 0;
+                    const completedCases = statsData.data.completedCases || 0;
+                    const inProgressCases = statsData.data.inProgressCases || 0;
+                    
+                    document.getElementById('totalCases').textContent = totalCases;
+                    document.getElementById('pendingCases').textContent = pendingCases;
+                    document.getElementById('completedCases').textContent = completedCases;
+                    document.getElementById('inProgressCases').textContent = inProgressCases;
+                    
+                    // Fetch last 30 days data
+                    console.log('Fetching last 30 days data with token');
+                    const last30DaysResponse = await fetch('http://192.168.114.132:3000/api/get-last-30-days', {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`,
+                        }
+                    });
+                    
+                    console.log('Last 30 Days Response Status:', last30DaysResponse.status);
+                    if (!last30DaysResponse.ok) {
+                        const errorText = await last30DaysResponse.text();
+                        console.error('Last 30 days error:', errorText);
+                        throw new Error(`HTTP error! status: ${last30DaysResponse.status}, message: ${errorText}`);
+                    }
+                    
+                    const last30DaysData = await last30DaysResponse.json();
+                    console.log('Fetched last 30 days data:', last30DaysData);
+                    
+                    let casesLast30Days = Array(30).fill(0);
+                    if (last30DaysData.success && last30DaysData.data) {
+                        casesLast30Days = last30DaysData.data.casesLast30Days || Array(30).fill(0);
+                    }
+                    
+                    // Fetch recent reports
+                    console.log('Fetching recent reports with token');
+                    const recentReportsResponse = await fetch('http://192.168.114.132:3000/api/get-recent-reports', {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`,
+                        }
+                    });
+                    
+                    console.log('Recent Reports Response Status:', recentReportsResponse.status);
+                    if (!recentReportsResponse.ok) {
+                        const errorText = await recentReportsResponse.text();
+                        console.error('Recent reports error:', errorText);
+                        throw new Error(`HTTP error! status: ${recentReportsResponse.status}, message: ${errorText}`);
+                    }
+                    
+                    const recentReportsData = await recentReportsResponse.json();
+                    console.log('Fetched recent reports:', recentReportsData);
+                    
+                    let recentReports = [];
+                    if (recentReportsData.success && recentReportsData.data) {
+                        recentReports = recentReportsData.data.recentReports || [];
+                    }
+                    
+                    // Update UI
+                    if (totalCases > 0) {
+                        lineChartPlaceholder.style.display = 'none';
+                        pieChartPlaceholder.style.display = 'none';
+                        document.getElementById('casesChart').style.display = 'block';
+                        document.getElementById('casesPieChart').style.display = 'block';
+                        initializeCharts(casesLast30Days, {
+                            completed: completedCases,
+                            pending: pendingCases,
+                            inProgress: inProgressCases
+                        });
+                    } else {
+                        lineChartPlaceholder.style.display = 'block';
+                        pieChartPlaceholder.style.display = 'block';
+                        document.getElementById('casesChart').style.display = 'none';
+                        document.getElementById('casesPieChart').style.display = 'none';
+                    }
+                    
+                    renderRecentReports(recentReports);
+                    fetchError.style.display = 'none';
+                } else {
+                    throw new Error('Invalid response data: ' + JSON.stringify(statsData));
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error.message);
+                fetchError.textContent = `Failed to fetch data: ${error.message}`;
+                fetchError.style.display = 'block';
+                const loginButton = document.createElement('button');
+                loginButton.className = 'btn btn-primary mt-3';
+                loginButton.textContent = 'Go to Login';
+                loginButton.onclick = function() {
+                    window.location.href = '/user/signin';
+                };
+                fetchError.appendChild(document.createElement('br'));
+                fetchError.appendChild(loginButton);
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        // Session warning timer
+        let sessionWarningTimer;
+        function resetSessionWarningTimer() {
+            if (sessionWarningTimer) {
+                clearTimeout(sessionWarningTimer);
+            }
+            document.getElementById('session-warning').style.display = 'none';
+            sessionWarningTimer = setTimeout(() => {
+                document.getElementById('session-warning').style.display = 'block';
+            }, 25 * 60 * 1000); // 25 minutes
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            updateAllData();
+            const updateInterval = setInterval(updateAllData, 30000);
+            document.getElementById('refresh-data').addEventListener('click', function() {
+                updateAllData();
+            });
+            resetSessionWarningTimer();
+            window.addEventListener('beforeunload', function() {
+                clearInterval(updateInterval);
+                clearTimeout(sessionWarningTimer);
+            });
         });
     </script>
-    
-    
-    
-
 </body>
 </html>

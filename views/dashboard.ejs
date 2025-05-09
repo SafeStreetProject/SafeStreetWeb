@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SafeStreet Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSS7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -47,7 +47,7 @@
             padding: 10px;
             text-decoration: none;
         }
-        .sidebar #a:hover {
+        .sidebar a:hover {
             background-color: #495057;
         }
         .content {
@@ -96,85 +96,304 @@
             font-weight: bold;
             color: #333;
         }
+        .error-message {
+            color: red;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .recent-reports {
+            margin-top: 40px;
+        }
+        .recent-reports h2 {
+            margin-bottom: 20px;
+        }
+        .report-card {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            margin: 10px auto;
+            transition: transform 0.3s;
+        }
+        .report-card:hover {
+            transform: scale(1.02);
+        }
+        .report-card .report-text {
+            flex: 1;
+            text-align: left;
+        }
+        .report-card .report-image {
+            width: 150px;
+            height: 100px;
+            border-radius: 5px;
+            object-fit: cover;
+            margin-left: 20px;
+        }
+        .report-card .completion-image {
+            width: 100px;
+            height: 60px;
+            border-radius: 5px;
+            object-fit: cover;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <h2><img src="/images/logo.png" height="25px" width="30px">SafeStreet</h2>
-        <div> 
+        <h2><img src="/images/logo.png" height="25px" width="30px"> SafeStreet</h2>
+        <div>
             <% if (locals.user) { %>
-                <p style="color: #f8f9fa;font-size: 20px;font-family: Arial, Helvetica, sans-serif;padding-bottom: -20px;"></i><%= locals.user.FirstName %> <i class="fa-solid fa-user"></i></p>
+                <p style="color: #f8f9fa; font-size: 20px; font-family: Arial, Helvetica, sans-serif;">
+                    <%= locals.user.FirstName %> <i class="fa-solid fa-user"></i>
+                </p>
             <% } %>
         </div>
-        
     </div>
     <div class="sidebar">
-        <a id="a" href="dashboard">Dashboard</a>
-        <a id="a" href="reports">Reports</a>
-        <a id="a" href="map">Map Overview</a>
-        <a id="a" href="management">Management</a>
-        <a id="a" href="help">Help</a>
-        <a id="a" href="changepassword">Change Password</a>
-        <button class="btn btn-danger w-100 mt-3"><a href="/user/logout">Logout</a></button>
+        <a href="/user/dashboard">Dashboard</a>
+        <a href="/user/reports">Reports</a>
+        <a href="/user/map">Map Overview</a>
+        <a href="/user/management">Management</a>
+        <a href="/user/help">Help</a>
+        <a href="/user/changepassword">Change Password</a>
+        <button class="btn btn-danger w-100 mt-3"><a href="/user/logout" style="color: white; text-decoration: none;">Logout</a></button>
     </div>
     <div class="content">
         <h1>Dashboard Overview</h1>
+        <% if (locals.error) { %>
+            <p class="error-message"><%= error %></p>
+        <% } %>
         <div class="dashboard-cards">
             <div class="card">
-                <h3>Total Reports</h3>
-                <p>120</p>
+                <h3>Total Pothole Reports</h3>
+                <p id="totalCases"><%= totalUploads || 0 %></p>
             </div>
             <div class="card">
                 <h3>Pending Issues</h3>
-                <p>45</p>
+                <p id="pendingCases"><%= pendingIssues || 0 %></p>
+            </div>
+            <div class="card">
+                <h3>In Progress Issues</h3>
+                <p id="inProgressCases">0</p>
             </div>
             <div class="card">
                 <h3>Resolved Issues</h3>
-                <p>75</p>
+                <p id="resolvedCases"><%= resolvedIssues || 0 %></p>
             </div>
         </div>
         <div class="chart-container">
             <canvas id="reportChart"></canvas>
             <div class="chart-label" id="chartPercentage"></div>
         </div>
+        <div class="recent-reports">
+            <h2>Recent Reports</h2>
+            <div id="recentReportsList"></div>
+        </div>
+        <p id="fetchError" class="error-message" style="display: none;"></p>
     </div>
     <script>
-        const totalReports = 120;
-        const pendingIssues = 45;
-        const resolvedIssues = 75;
-        const pendingPercentage = ((pendingIssues / totalReports) * 100).toFixed(1);
-        const resolvedPercentage = ((resolvedIssues / totalReports) * 100).toFixed(1);
-        
-        document.getElementById('chartPercentage').innerText = `${resolvedPercentage}% Resolved`;
-        
+        // Initial values from server-side rendering
+        let totalCases = <%= totalUploads || 0 %>;
+        let resolvedCases = <%= resolvedIssues || 0 %>;
+        let pendingCases = totalCases - resolvedCases; // Initial computation
+        let inProgressCases = 0;
+        let pendingPercentage = totalCases > 0 ? ((pendingCases / totalCases) * 100).toFixed(1) : 0;
+        let inProgressPercentage = totalCases > 0 ? ((inProgressCases / totalCases) * 100).toFixed(1) : 0;
+        let resolvedPercentage = totalCases > 0 ? ((resolvedCases / totalCases) * 100).toFixed(1) : 0;
+
+        // Debug initial token and user
+        console.log('Dashboard - Initial token:', '<%= locals.token || "No token" %>');
+        console.log('Dashboard - User:', '<%= JSON.stringify(locals.user || {}) %>');
+
+        // Validate JWT format
+        function isValidJwt(token) {
+            if (!token || typeof token !== 'string') {
+                console.warn('isValidJwt: Token is empty or not a string');
+                return false;
+            }
+            const parts = token.split('.');
+            return parts.length === 3 && parts.every(part => part.length > 0);
+        }
+
+        // Set chart label
+        const chartPercentage = document.getElementById('chartPercentage');
+        chartPercentage.innerText = totalCases > 0 ? `${resolvedPercentage}% Resolved` : '0% Resolved';
+
+        // Initialize Chart
         const ctx = document.getElementById('reportChart').getContext('2d');
-        new Chart(ctx, {
+        const reportChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Pending Issues', 'Resolved Issues'],
+                labels: ['Pending Issues', 'In Progress Issues', 'Resolved Issues'],
                 datasets: [{
-                    data: [pendingIssues, resolvedIssues],
-                    backgroundColor: ['#ffcc00', '#28a745'],
+                    data: [pendingCases, inProgressCases, resolvedCases],
+                    backgroundColor: ['#ffcc00', '#007bff', '#28a745'],
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: {
-                        position: 'top',
-                    },
+                    legend: { position: 'top' },
                     tooltip: {
                         callbacks: {
                             label: function(tooltipItem) {
                                 let dataset = tooltipItem.dataset;
                                 let currentValue = dataset.data[tooltipItem.dataIndex];
-                                let percentage = ((currentValue / totalReports) * 100).toFixed(1);
+                                let percentage = totalCases > 0 ? ((currentValue / totalCases) * 100).toFixed(1) : 0;
                                 return `${currentValue} (${percentage}%)`;
                             }
                         }
                     }
                 }
             }
+        });
+
+        // Render Recent Reports
+        function renderRecentReports(reports) {
+            const recentReportsList = document.getElementById('recentReportsList');
+            recentReportsList.innerHTML = '';
+            if (!reports || reports.length === 0) {
+                recentReportsList.innerHTML = '<p>No recent reports available.</p>';
+                return;
+            }
+
+            reports.forEach(report => {
+                const reportCard = `
+                    <div class="report-card">
+                        <div class="report-text">
+                            <h3>${report.name}'s Report</h3>
+                            <p><strong>Location:</strong> ${report.location}</p>
+                            <p><strong>Date:</strong> ${report.date}</p>
+                            <p><strong>Time:</strong> ${report.time}</p>
+                            <p><strong>Severity:</strong> ${report.severity}</p>
+                            <p><strong>Confidence:</strong> ${report.confidence}%</p>
+                            <p><strong>Status:</strong> ${report.status}</p>
+                            <p><strong>Assigned to:</strong> ${report.assigned || 'Not Assigned'}</p>
+                            ${report.completionImage ? `<p><strong>Completion Image:</strong><br><img src="${report.completionImage}" alt="Completion Image" class="completion-image"></p>` : ''}
+                        </div>
+                        <img src="${report.imageUrl}" alt="Report Image" class="report-image" onerror="this.src='https://via.placeholder.com/150x100?text=No+Image'">
+                    </div>`;
+                recentReportsList.innerHTML += reportCard;
+            });
+        }
+
+        // Poll for updated dashboard data
+        async function updateDashboardData() {
+            const fetchErrorElement = document.getElementById('fetchError');
+            try {
+                const token = '<%= locals.token || "" %>';
+
+                if (!token) {
+                    console.error('Token not available for fetching data');
+                    fetchErrorElement.textContent = 'Authentication token missing. Please log in again.';
+                    fetchErrorElement.style.display = 'block';
+                    window.location.href = '/user/signin';
+                    return;
+                }
+
+                if (!isValidJwt(token)) {
+                    console.error('Invalid token detected:', token);
+                    fetchErrorElement.textContent = 'Invalid authentication token. Please log in again.';
+                    fetchErrorElement.style.display = 'block';
+                    window.location.href = '/user/signin';
+                    return;
+                }
+
+                // Fetch report stats
+                console.log('Fetching report stats with token:', token);
+                const statsResponse = await fetch('http://192.168.114.132:3000/api/get-report-stats', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (!statsResponse.ok) {
+                    const errorText = await statsResponse.text();
+                    if (statsResponse.status === 401) {
+                        console.error('Authentication error:', errorText);
+                        fetchErrorElement.textContent = 'Authentication failed: Invalid or expired token. Please log in again.';
+                        fetchErrorElement.style.display = 'block';
+                        window.location.href = '/user/signin';
+                        return;
+                    }
+                    throw new Error(`HTTP error! status: ${statsResponse.status}, message: ${errorText}`);
+                }
+
+                const statsData = await statsResponse.json();
+                console.log('Fetched report stats:', statsData);
+
+                if (statsData.success && statsData.data) {
+                    totalCases = statsData.data.totalCases || 0;
+                    pendingCases = statsData.data.pendingCases || 0;
+                    inProgressCases = statsData.data.inProgressCases || 0;
+                    resolvedCases = statsData.data.completedCases || 0;
+
+                    document.getElementById('totalCases').textContent = totalCases;
+                    document.getElementById('pendingCases').textContent = pendingCases;
+                    document.getElementById('inProgressCases').textContent = inProgressCases;
+                    document.getElementById('resolvedCases').textContent = resolvedCases;
+
+                    pendingPercentage = totalCases > 0 ? ((pendingCases / totalCases) * 100).toFixed(1) : 0;
+                    inProgressPercentage = totalCases > 0 ? ((inProgressCases / totalCases) * 100).toFixed(1) : 0;
+                    resolvedPercentage = totalCases > 0 ? ((resolvedCases / totalCases) * 100).toFixed(1) : 0;
+                    chartPercentage.innerText = totalCases > 0 ? `${resolvedPercentage}% Resolved` : '0% Resolved';
+                    reportChart.data.datasets[0].data = [pendingCases, inProgressCases, resolvedCases];
+                    reportChart.update();
+
+                    fetchErrorElement.style.display = 'none';
+                } else {
+                    throw new Error('Invalid stats response data: ' + JSON.stringify(statsData));
+                }
+
+                // Fetch recent reports
+                console.log('Fetching recent reports with token:', token);
+                const reportsResponse = await fetch('http://192.168.114.132:3000/api/get-recent-reports', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (!reportsResponse.ok) {
+                    const errorText = await reportsResponse.text();
+                    if (reportsResponse.status === 401) {
+                        console.error('Authentication error:', errorText);
+                        fetchErrorElement.textContent = 'Authentication failed: Invalid or expired token. Please log in again.';
+                        fetchErrorElement.style.display = 'block';
+                        window.location.href = '/user/signin';
+                        return;
+                    }
+                    throw new Error(`HTTP error! status: ${reportsResponse.status}, message: ${errorText}`);
+                }
+
+                const reportsData = await reportsResponse.json();
+                console.log('Fetched recent reports:', reportsData);
+
+                if (reportsData.success && reportsData.data) {
+                    renderRecentReports(reportsData.data.recentReports || []);
+                } else {
+                    throw new Error('Invalid reports response data: ' + JSON.stringify(reportsData));
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error.message);
+                fetchErrorElement.textContent = `Failed to fetch updates: ${error.message}`;
+                fetchErrorElement.style.display = 'block';
+            }
+        }
+
+        // Initial fetch and poll every 30 seconds
+        updateDashboardData();
+        const updateInterval = setInterval(updateDashboardData, 30000);
+
+        // Clean up interval on page unload
+        window.addEventListener('beforeunload', function() {
+            clearInterval(updateInterval);
         });
     </script>
 </body>
