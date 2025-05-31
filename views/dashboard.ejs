@@ -190,11 +190,11 @@
             <canvas id="reportChart"></canvas>
             <div class="chart-label" id="chartPercentage"></div>
         </div>
-        <div class="recent-reports">
+        <!-- <div class="recent-reports">
             <h2>Recent Reports</h2>
             <div id="recentReportsList"></div>
         </div>
-        <p id="fetchError" class="error-message" style="display: none;"></p>
+        <p id="fetchError" class="error-message" style="display: none;"></p> -->
     </div>
     <script>
         // Initial values from server-side rendering
@@ -254,33 +254,33 @@
         });
 
         // Render Recent Reports
-        function renderRecentReports(reports) {
-            const recentReportsList = document.getElementById('recentReportsList');
-            recentReportsList.innerHTML = '';
-            if (!reports || reports.length === 0) {
-                recentReportsList.innerHTML = '<p>No recent reports available.</p>';
-                return;
-            }
+        // function renderRecentReports(reports) {
+        //     const recentReportsList = document.getElementById('recentReportsList');
+        //     recentReportsList.innerHTML = '';
+        //     if (!reports || reports.length === 0) {
+        //         recentReportsList.innerHTML = '<p>No recent reports available.</p>';
+        //         return;
+        //     }
 
-            reports.forEach(report => {
-                const reportCard = `
-                    <div class="report-card">
-                        <div class="report-text">
-                            <h3>${report.name}'s Report</h3>
-                            <p><strong>Location:</strong> ${report.location}</p>
-                            <p><strong>Date:</strong> ${report.date}</p>
-                            <p><strong>Time:</strong> ${report.time}</p>
-                            <p><strong>Severity:</strong> ${report.severity}</p>
-                            <p><strong>Confidence:</strong> ${report.confidence}%</p>
-                            <p><strong>Status:</strong> ${report.status}</p>
-                            <p><strong>Assigned to:</strong> ${report.assigned || 'Not Assigned'}</p>
-                            ${report.completionImage ? `<p><strong>Completion Image:</strong><br><img src="${report.completionImage}" alt="Completion Image" class="completion-image"></p>` : ''}
-                        </div>
-                        <img src="${report.imageUrl}" alt="Report Image" class="report-image" onerror="this.src='https://via.placeholder.com/150x100?text=No+Image'">
-                    </div>`;
-                recentReportsList.innerHTML += reportCard;
-            });
-        }
+        //     reports.forEach(report => {
+        //         const reportCard = `
+        //             <div class="report-card">
+        //                 <div class="report-text">
+        //                     <h3>${report.name}'s Report</h3>
+        //                     <p><strong>Location:</strong> ${report.location}</p>
+        //                     <p><strong>Date:</strong> ${report.date}</p>
+        //                     <p><strong>Time:</strong> ${report.time}</p>
+        //                     <p><strong>Severity:</strong> ${report.severity}</p>
+        //                     <p><strong>Confidence:</strong> ${report.confidence}%</p>
+        //                     <p><strong>Status:</strong> ${report.status}</p>
+        //                     <p><strong>Assigned to:</strong> ${report.assigned || 'Not Assigned'}</p>
+        //                     ${report.completionImage ? `<p><strong>Completion Image:</strong><br><img src="${report.completionImage}" alt="Completion Image" class="completion-image"></p>` : ''}
+        //                 </div>
+        //                 <img src="${report.imageUrl}" alt="Report Image" class="report-image" onerror="this.src='https://via.placeholder.com/150x100?text=No+Image'">
+        //             </div>`;
+        //         recentReportsList.innerHTML += reportCard;
+        //     });
+        // }
 
         // Poll for updated dashboard data
         async function updateDashboardData() {
@@ -306,7 +306,7 @@
 
                 // Fetch report stats
                 console.log('Fetching report stats with token:', token);
-                const statsResponse = await fetch('http://192.168.114.132:3000/api/get-report-stats', {
+                const statsResponse = await fetch('http://192.168.245.132:3000/api/get-report-stats', {
                     headers: {
                         'Accept': 'application/json',
                         'Authorization': `Bearer ${token}`,
@@ -352,8 +352,8 @@
                 }
 
                 // Fetch recent reports
-                console.log('Fetching recent reports with token:', token);
-                const reportsResponse = await fetch('http://192.168.114.132:3000/api/get-recent-reports', {
+                // console.log('Fetching recent reports with token:', token);
+                const reportsResponse = await fetch('http://192.168.245.132:3000/api/get-recent-reports', {
                     headers: {
                         'Accept': 'application/json',
                         'Authorization': `Bearer ${token}`,

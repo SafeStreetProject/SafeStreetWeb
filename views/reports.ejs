@@ -456,7 +456,9 @@
         function renderRecentReports(reports) {
             const container = document.getElementById('cases-container');
             const noReportsMessage = document.getElementById('no-reports-message');
-            
+            // console.log("🔍 Recent reports array:", reports);
+             console.log("🔍 Recent reports array:", reports);
+             reports.forEach((r,i) => console.log(`🔍 reports[${i}] keys:`, Object.keys(r), "→", r));
             if (!reports || reports.length === 0) {
                 noReportsMessage.textContent = 'No recent reports with detected potholes available.';
                 return;
@@ -471,7 +473,7 @@
                 
                 const severity = report.severity ? report.severity.toLowerCase() : 'medium';
                 const imageUrl = report.imageUrl || 'https://via.placeholder.com/300x150';
-                const name = report.name || 'Unknown';
+                const name = report.name || report.FirstName || report.firstName || 'Unknown';
                 const location = report.location || 'Unknown location';
                 const date = report.date || new Date().toLocaleDateString();
                 const time = report.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -514,7 +516,6 @@
             const fetchError = document.getElementById('fetch-error');
             const lineChartPlaceholder = document.getElementById('line-chart-placeholder');
             const pieChartPlaceholder = document.getElementById('pie-chart-placeholder');
-            
             loadingIndicator.style.display = 'block';
             fetchError.style.display = 'none';
             
@@ -544,7 +545,7 @@
                 
                 // Fetch report statistics
                 console.log('Fetching report statistics with token');
-                const statsResponse = await fetch('http://192.168.114.132:3000/api/get-report-stats', {
+                const statsResponse = await fetch('http://192.168.245.132:3000/api/get-report-stats', {
                     headers: {
                         'Accept': 'application/json',
                         'Authorization': `Bearer ${token}`,
@@ -583,7 +584,7 @@
                     
                     // Fetch last 30 days data
                     console.log('Fetching last 30 days data with token');
-                    const last30DaysResponse = await fetch('http://192.168.114.132:3000/api/get-last-30-days', {
+                    const last30DaysResponse = await fetch('http://192.168.245.132:3000/api/get-last-30-days', {
                         headers: {
                             'Accept': 'application/json',
                             'Authorization': `Bearer ${token}`,
@@ -607,7 +608,7 @@
                     
                     // Fetch recent reports
                     console.log('Fetching recent reports with token');
-                    const recentReportsResponse = await fetch('http://192.168.114.132:3000/api/get-recent-reports', {
+                    const recentReportsResponse = await fetch('http://192.168.245.132:3000/api/get-recent-reports', {
                         headers: {
                             'Accept': 'application/json',
                             'Authorization': `Bearer ${token}`,

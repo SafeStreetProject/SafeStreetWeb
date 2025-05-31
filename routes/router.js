@@ -78,7 +78,7 @@ router.get('/get-recent-reports', authenticate, async (req, res) => {
         const resolvedReports = await Promise.all(recentReports.map(async (doc) => {
             const uploader = await User.findOne({ email: doc.userEmail });
             return {
-                name: uploader ? uploader.FirstName : 'Unknown',
+                name: uploader ? uploader.name : 'Unknown',
                 location: `${doc.latitude || 'Unknown'}, ${doc.longitude || 'Unknown'}`,
                 date: doc.uploadDate.toISOString().split('T')[0],
                 severity: doc.status === 'pending' ? 'High' : 'Low',
